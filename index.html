@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Bouncing Ball in a Circle</title>
+    <style>
+        body { margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background: #1a1a1a; overflow: hidden; }
+        canvas { border: 2px solid #444; background: #000; }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Configuration
+        canvas.width = 600;
+        canvas.height = 600;
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        const containerRadius = 250;
+
+        let ball = {
+            x: centerX,
+            y: centerY - 100,
+            radius: 10,
+            dx: 3,
+            dy: 2,
+            gravity: 0.1,
+            color: 'hsl(0, 100%, 50%)',
+            hue: 0
+        };
+
+        function draw() {
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw large container circle
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, containerRadius, 0, Math.PI * 2);
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 5;
+            ctx.stroke();
+
+            // Update physics
+            ball.dy += ball.gravity;
+            ball.x += ball.dx;
+            ball.y += ball.dy;
+
+            // Collision detection with circular surface
+            const dist = Math.sqrt((ball.x - centerX)**2 + (ball.y - centerY)**2);
+            if (dist + ball.radius >= containerRadius) {
+                // Change color on hit
+                ball.hue = (ball.hue + 45) % 360;
+                ball.color = `hsl(${ball.hue}, 100%, 50%)`;
+
+                // Increase size
+                ball.radius += 1.5;
+
+                // Simple vector bounce math
+                const nx = (ball.x - centerX) / dist;
+                const ny = (ball.y - centerY) / dist;
+                const dot = ball.dx * nx + ball.dy * ny;
+
+                ball.dx -= 2 * dot * nx;
+                ball.dy -= 2 * dot * ny;
+
+                // Move ball inside to prevent getting stuck
+                ball.x = centerX + nx * (containerRadius - ball.radius - 1);
+                ball.y = centerY + ny * (containerRadius - ball.radius - 1);
+            }
+
+            // Draw ball
+            ctx.beginPath();
+            ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+            ctx.fillStyle = ball.color;
+            ctx.fill();
+            ctx.closePath();
+
+            requestAnimationFrame(draw);
+        }
+
+        draw();
+    </script>
+</body>
+</html>
